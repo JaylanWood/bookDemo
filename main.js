@@ -1,25 +1,48 @@
-let model = {
+// Class
+function Model(options) {
+    this.data = options.data
+    this.resource = options.resource
+}
+Model.prototype.fetch = function (id) {
+    return axios.get(`/${this.resource}/${id}`).then((response) => {
+        this.data = response.data
+        return response
+    })
+}
+Model.prototype.update = function (data) {
+    let id = this.data.id
+    return axios.put(`/${this.resource}/${id}`, data).then((response) => {
+        this.data = response.data
+        return response
+    })
+}
+
+function View({
+    el,
+    template
+}) {
+    this.el = el
+    this.template = template
+}
+View.prototype.render = function (data) {
+    let html = this.template
+    for (let key in data) {
+        html = html.replace(`__${key}__`, data[key])
+    }
+    $(this.el).html(html)
+}
+
+// MVC
+let model = new Model({
     data: {
         name: '',
         number: 0,
         id: ''
     },
-    fetch: function (id) {
-        return axios.get(`/books/${id}`).then((response) => {
-            this.data = response.data
-            return response
-        })
-    },
-    update: function (data) {
-        let id = this.data.id
-        return axios.put(`/books/${id}`, data).then((response) => {
-            this.data = response.data
-            return response
-        })
-    }
-}
+    resource: 'books',
+})
 
-let view = {
+let view = new View({
     el: '.app',
     template: `
     <div>
@@ -31,12 +54,8 @@ let view = {
         <button class="minusOne">减1</button>
         <button class="reset">归零</button>
     </div>
-    `,
-    render: function (data) {
-        let html = this.template.replace('__name__', data.name).replace('__number__', data.number)
-        $(this.el).html(html)
-    }
-}
+    `
+})
 
 let controller = {
     inti: function (options) {
@@ -48,7 +67,7 @@ let controller = {
         this.model = model
         this.view.render(this.model.data)
         this.bindEvents()
-        this.model.fetch(1).then(() => {
+        this.model.fetch('1').then(() => {
             this.view.render(this.model.data)
         })
 
@@ -84,6 +103,7 @@ let controller = {
         $(this.view.el).on('click', '.reset', this.reset.bind(this))
     }
 }
+
 controller.inti({
     view: view,
     model: model
