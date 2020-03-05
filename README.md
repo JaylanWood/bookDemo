@@ -27,3 +27,7 @@ axios 在本地 http-server 发GET以外的请求会触发CORS预检，错误405
 
 用 MVC 的思想把代码整理。
 
+## Vue
+
+用 Vue 取代 MVC 的 VC。
+

@@ -4,107 +4,84 @@ function Model(options) {
     this.resource = options.resource
 }
 Model.prototype.fetch = function (id) {
-    return axios.get(`/${this.resource}/${id}`).then((response) => {
+    return axios.get(`/${this.resource}s/${id}`).then((response) => {
         this.data = response.data
         return response
     })
 }
 Model.prototype.update = function (data) {
     let id = this.data.id
-    return axios.put(`/${this.resource}/${id}`, data).then((response) => {
+    return axios.put(`/${this.resource}s/${id}`, data).then((response) => {
         this.data = response.data
         return response
     })
 }
 
-function View({
-    el,
-    template
-}) {
-    this.el = el
-    this.template = template
-}
-View.prototype.render = function (data) {
-    let html = this.template
-    for (let key in data) {
-        html = html.replace(`__${key}__`, data[key])
-    }
-    $(this.el).html(html)
-}
-
-// MVC
+// model
 let model = new Model({
     data: {
         name: '',
         number: 0,
         id: ''
     },
-    resource: 'books',
+    resource: 'book',
 })
 
-let view = new View({
+// Vue
+let view = new Vue({
     el: '.app',
+    data: {
+        book: {
+            name: '你的名字',
+            number: 0,
+            id: '1',
+
+        },
+        n: '1'
+    },
     template: `
     <div>
-        <p>书名：《__name__》</p>
-        <p>数量：<span class="number">__number__</span></p>
+        <div>
+            <p>书名：《{{book.name}}》</p>
+            <p>数量：<span class="number">{{book.number}}</span></p>
+        </div>
+        <div>
+            <input v-model="n">
+            <p>N 的值是{{n}}</p>
+        </div>
+        <div>
+            <button v-on:click="addOne">加N</button>
+            <button v-on:click="minusOne">减N</button>
+            <button v-on:click="reset">归零</button>
+        </div>
     </div>
-    <div>
-        <button class="addOne">加1</button>
-        <button class="minusOne">减1</button>
-        <button class="reset">归零</button>
-    </div>
-    `
-})
-
-let controller = {
-    inti: function (options) {
-        let {
-            view,
-            model
-        } = options
-        this.view = view
-        this.model = model
-        this.view.render(this.model.data)
-        this.bindEvents()
-        this.model.fetch('1').then(() => {
-            this.view.render(this.model.data)
-        })
-
-    },
-    addOne: function () {
-        var oldNumber = $('.number').text()
-        var newNumber = oldNumber - 0 + 1
-        this.model.update({
-            number: newNumber
-        }).then(() => {
-            this.view.render(this.model.data)
+    `,
+    created: function () {
+        model.fetch('1').then(() => {
+            this.book = model.data
         })
     },
-    minusOne: function () {
-        var oldNumber = $('.number').text()
-        var newNumber = oldNumber - 0 - 1
-        this.model.update({
-            number: newNumber
-        }).then(() => {
-            this.view.render(this.model.data)
-        })
-    },
-    reset: function () {
-        this.model.update({
-            number: 0
-        }).then(() => {
-            this.view.render(this.model.data)
-        })
-    },
-    bindEvents: function () {
-        $(this.view.el).on('click', '.addOne', this.addOne.bind(this))
-        $(this.view.el).on('click', '.minusOne', this.minusOne.bind(this))
-        $(this.view.el).on('click', '.reset', this.reset.bind(this))
+    methods: {
+        addOne: function () {
+            model.update({
+                number: this.book.number + (this.n - 0)
+            }).then(() => {
+                this.book = model.data
+            })
+        },
+        minusOne: function () {
+            model.update({
+                number: this.book.number - (this.n - 0)
+            }).then(() => {
+                this.book = model.data
+            })
+        },
+        reset: function () {
+            model.update({
+                number: 0
+            }).then(() => {
+                this.book = model.data
+            })
+        },
     }
-}
-
-controller.inti({
-    view: view,
-    model: model
 })

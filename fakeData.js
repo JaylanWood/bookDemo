@@ -1,9 +1,9 @@
 ! function () {
-    let book = {
-        name: '包菜的做法',
-        number: 5,
-        id: 1
-    }
+let book = {
+    name: '包菜的做法',
+    number: 5,
+    id: 1,
+}
     axios.interceptors.response.use(function (response) {
         // 把请求里的url\method\data拿出来
         let {
